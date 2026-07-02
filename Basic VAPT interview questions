@@ -39,3 +39,14 @@ Path Traversal:
 
 Path Traversal is a vulnerability that allows an attacker to access files and directories outside the intended location
 by manipulating file path inputs using sequences such as ../. This can lead to unauthorized access to sensitive files on the server.
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+5. IDOR vs BOLA?
+
+
+✅ IDOR = A specific type of access control vulnerability where an attacker manipulates an object identifier (e.g., user ID, account number) to access unauthorized data.
+
+✅ BOLA = A broader authorization issue where the application/API fails to verify whether the user is allowed to access a particular object.
+
+
