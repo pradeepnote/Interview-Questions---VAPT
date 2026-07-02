@@ -1,1 +1,41 @@
+1) What is the use of httponly attribute?
 
+Ans: 
+HttpOnly is a security attribute applied to cookies that blocks client-side JavaScript from accessing them.
+Its main purpose is to protect sensitive data, like session tokens, from being stolen by hackers through Cross-Site Scripting (XSS) attacks.
+Cookies marked with the HttpOnly attribute can still be sent by the browser in HTTP/HTTPS requests, but they cannot be read, modified, or accessed through JavaScript.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2. Can we do host header injection on the login page?
+
+Ans: 
+Yes, we can test for Host Header Injection on a login page. 
+I would modify the Host header and observe whether the application uses that value in redirects, password reset links, or generated URLs.
+If the application trusts the user-supplied Host header, it could be vulnerable.
+
+Example
+User requests a password reset. Attacker modifies the Host header to evil.com.
+Application generates:   https://evil.com/reset?token=abc123
+User clicks the link from the email.  The attacker captures the reset token and may take over the account.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+3. Can we perform csrf attack on login page and why?
+
+
+
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+4. Directory Listing vs Path Traversal?
+
+Directory Listing 
+
+Directory Listing is a security misconfiguration that allows users to view the contents of a server
+directory, including files and folders that should not be publicly accessible.
+
+Path Traversal:
+
+Path Traversal is a vulnerability that allows an attacker to access files and directories outside the intended location
+by manipulating file path inputs using sequences such as ../. This can lead to unauthorized access to sensitive files on the server.
