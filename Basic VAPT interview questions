@@ -50,3 +50,97 @@ by manipulating file path inputs using sequences such as ../. This can lead to u
 ✅ BOLA = A broader authorization issue where the application/API fails to verify whether the user is allowed to access a particular object.
 
 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+5. ARP vs RARP?
+Address resolution protocol --> used to find MAC address for a known IP address.
+Reverse Address resolution protocol --> used to find IP for a known MAC.
+--> Requests are Broadcast messages. Replies are unicast messages.
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+4. In the application there was search field then how explain reflected Xss and DOM Xss 
+
+I verify whether the payload is reflected in the server response. If the server returns my unsanitized input and the browser executes it,
+I classify it as Reflected XSS.
+
+If I enter an XSS payload into a search field, I first inspect the HTTP response in Burp Suite. If the payload is reflected by the server and executes,
+it is Reflected XSS. If the payload is not present in the response but executes because client-side JavaScript reads user input and inserts it into 
+the DOM using unsafe methods like innerHTML, then it is DOM XSS.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+5. Difference between session fixation and session hijacking and explain in detail  how do you exploit in practical manner.
+
+Session Fixation
+The attacker forces the victim to use a session ID that the attacker already knows. 
+If the application does not generate a new session ID after login, the attacker can later use the same session ID to access the victim's account.
+
+Attacker sets the victim's session ID before login.
+Happens before authentication.
+Victim logs in using the attacker's known session ID.
+Main issue: Session ID is not regenerated after login.
+
+The attacker somehow gets the victim to use the same session ID (for example, through a crafted link in an application
+that accepts session IDs via URLs, cookies, or another insecure mechanism).
+and the session remains authenticated, this indicates a session fixation weakness because 
+the session identifier was not regenerated after authentication.
+
+Session Hijacking:
+
+Instead of fixing the session beforehand, the attacker obtains an authenticated user's session cookie.
+Attacker steals an already authenticated session ID.
+Happens after authentication.
+Victim has already logged in, and the attacker uses the stolen session.
+Main issue: Session cookie is stolen or exposed.
+
+Common causes include:
+
+Cross-Site Scripting (XSS) allowing session theft if cookies are not protected.
+Network interception when cookies are transmitted over unencrypted HTTP.
+Malware on the user's device.
+Session IDs leaked in URLs.
+Browser extensions or logs exposing cookies.
+Weak cookie attributes (missing HttpOnly, Secure, or appropriate SameSite settings).
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+6. Explain double submitted cookie in detailly 
+
+Double Submit Cookie is a CSRF protection mechanism. After login, the server generates a random CSRF token and stores it in a cookie. 
+When the client sends a state-changing request, it also includes the same token in a custom header or hidden form field. 
+The server compares the token from the cookie with the token from the header or form. If both values match, the request is accepted; otherwise, it is rejected.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+7. Csrf mitigation.
+
+CSRF (Cross-Site Request Forgery) occurs when an attacker tricks a logged-in user into sending an unwanted request to a trusted application. Since the browser automatically includes the user's session cookies,
+the server may process the request as if it came from the legitimate user.
+
+Synchronizer CSRF Token	: The server generates a unique, unpredictable token for the user's session
+Double Submit Cookie	: The server sends a CSRF token in a cookie.
+SameSite Cookies	: Configure session cookies with the SameSite attribute.
+Origin/Referer Validation	: The server checks where the request originated.
+Re-authentication : Require the user to re-enter their password or complete another verification step before performing high-risk actions.
+
+Examples: Change password, Update email address, Delete account, Transfer money
+
+MFA for Sensitive Actions	: Require a second factor (such as an OTP or authenticator app) for highly sensitive actions.
+Avoid State Changes via GET : GET requests should be used only for retrieving data, not for modifying server state.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+8. Xss mitigation 
+
+9. How do you bypass csrf token if it is properly validated in the application.
+
+10. How do you bypass Xss-protection header to exploit Xss.
+
+11. If I gave one url which contain img file then how do you perform remote code execution ( explain in detailly in practical way).
+
+12. How to bypass csrf token
+
+13. Which is the best way in input validation (white listing or black listing) to mitigate Xss
+
+14. Which type of output encode used for to mitigate Xss.
