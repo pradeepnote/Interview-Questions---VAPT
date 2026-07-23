@@ -133,14 +133,243 @@ Avoid State Changes via GET : GET requests should be used only for retrieving da
 
 8. Xss mitigation 
 
+Cross-Site Scripting is a vulnerability which is attacker injects malicious external JavaScript into a application. 
+When another user's browser loads that application,  the malicious script executes in the victim's, the attacker can access user's session, modifying page content or stealing data
+The three main types are Reflected XSS, Stored XSS, and DOM-Based XSS. 
+The primary mitigation is context-aware output encoding, along with input validation, HTML sanitization where needed, 
+safe DOM APIs, and a Content Security Policy.
+
+An attacker may be able to:
+
+Steal session information if cookies are accessible to JavaScript
+Perform actions on behalf of the victim
+Deface the web page
+
+Reflected XSS → Payload comes from the request and is immediately reflected.
+Stored XSS → Payload is stored on the server and affects multiple users.
+DOM XSS → Payload is handled by client-side JavaScript and the vulnerability exists in the browser DOM.
+
+Types of XSS
+1. Reflected XSS
+The payload is included in the request.
+The server reflects it immediately in the response.
+The malicious script executes when the victim opens the crafted link.
+
+Example:
+
+https://example.com/search?q=<script>alert(1)</script>
+
+2. Stored XSS
+The malicious payload is stored by the application (for example, in a comment, profile, or message).
+Every user who views that content executes the script.
+
+Example:
+
+An attacker posts:
+
+<script>alert(1)</script>
+
+in a comment, and every visitor to that page triggers the script.
+
+3. DOM-Based XSS
+
+The vulnerability exists in client-side JavaScript.
+The server does not reflect the payload.
+Browser JavaScript reads user-controlled input (such as a URL parameter or fragment) and inserts it into the page using unsafe DOM methods.
+
+Example:
+
+document.getElementById("result").innerHTML = location.hash.substring(1);
+
+The primary mitigation for XSS is context-aware output encoding, which ensures user input is displayed as text instead of executable code. 
+Input validation should also be implemented to accept only expected data, although it is not sufficient on its own.
+If HTML input is required, it should be sanitized before rendering. 
+Developers should use safe DOM APIs like textContent instead of innerHTML for untrusted data, implement a Content Security Policy (CSP), 
+keep frameworks and libraries updated, avoid dangerous JavaScript functions such as eval(), and 
+configure session cookies with the HttpOnly and Secure attributes to reduce the impact of any successful XSS attack.
+WAF Web application firewall
+Server side validation
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 9. How do you bypass csrf token if it is properly validated in the application.
+
+I verify whether the implementation is flawed. I test whether the server accepts missing or invalid tokens, 
+whether tokens are unpredictable and properly validated.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 10. How do you bypass Xss-protection header to exploit Xss.
 
+That header is deprecated and is ignored by most modern browsers. During a penetration test, I focus on finding actual XSS vulnerabilities by checking input handling,
+output encoding, DOM manipulation, and CSP. If the application is vulnerable, the absence or presence of the X-XSS-Protection header doesn't provide meaningful protection in modern browsers.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 11. If I gave one url which contain img file then how do you perform remote code execution ( explain in detailly in practical way).
+
+I would first verify what the image endpoint actually does. An image file itself cannot execute server-side code. 
+RCE would only be possible if there is a separate vulnerability in how the application processes or handles uploaded images. 
+I would enumerate the functionality, identify the image processing technology, and test for known classes of vulnerabilities within the scope of an authorized assessment.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 12. How to bypass csrf token
 
+Missing validation: Does the server still accept requests if the CSRF token is removed?
+Invalid token handling: Does the server reject modified or random tokens?
+Token quality: Is the token unpredictable and generated securely?
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 13. Which is the best way in input validation (white listing or black listing) to mitigate Xss
 
+Why is Whitelisting Better?
+
+Whitelisting defines exactly what input is allowed.
+
+Whitelisting is better because it only accepts expected input, whereas blacklisting attempts to block known malicious input and can miss new or obfuscated payloads. 
+However, input validation alone is not sufficient to prevent XSS. The primary mitigation is context-aware output encoding,
+along with HTML sanitization where HTML input is allowed and a strong Content Security Policy
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 14. Which type of output encode used for to mitigate Xss.
+
+The correct mitigation is context-aware output encoding. There is no single encoding for every situation. 
+If the data is displayed in HTML, HTML entity encoding is used.
+If it is placed inside an HTML attribute, attribute encoding is required. 
+For JavaScript, JavaScript string encoding should be used;
+for URLs, URL encoding;
+and for CSS, CSS encoding. 
+Using the correct encoding for the specific output context is the primary defense against XSS.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+HttpOnly → Prevents JavaScript from reading the cookie.
+Secure → Sends the cookie only over HTTPS.
+SameSite → Helps reduce the risk of CSRF attacks.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Clickjacking is an type vulnerablite in which legitimate website is loaded with in iframe or hidden page on malicious website 
+and tricks the user into clicking on element and perform unitended actions. 
+
+The page loads successfully inside the attacker's website.
+
+X-Frame-Options → Protects against Clickjacking.
+DENY → No website can frame the page.
+SAMEORIGIN → Only the same website can frame the page.
+CSP frame-ancestors → Modern, recommended mechanism for controlling framing.
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Payload gets reflected in immediate response and then gets executed by the browser while loading http response.
+
+Payload gets stored in the server permanently and when any user who visits that page where that payload will execute automatically.
+
+Dom xss vulnerability actually exists in client side code rather than the server side code in the first two types of xxs reflected and stored the problem is in server side validation but in DOM xss access mostly the problem arises because of lack of client side validation if the  code is written insecure.
+
+Sources can be used to provide user input. 
+Sinks is where that input that execute payload 
+
+innerhtml, innertext property of Document Object Model don't accept <script> tag in the user input
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+SQL injection is a technique in which we insert a sql payload in the input field of the application and that payload manipulates the database into performing 
+ some malicious actions when input validation is improper or missing from the application then this attack becomes possible.
+
+Through this attack attacker can read sensitive information modify the information and attacker can even escalate this to perform remote code execution attack
+
+we can insert single quotes or double quotes or some other characters which will generate these kind of error so this is the most common method that we use for fingerprinting 
+
+
+3 Type of sql injection mainly: In-band, Blind, Out-band sql injection
+
+In-band sql injection when we perform the attack we get to see the response in the application we get to see what is happening with our 
+payload how it is getting executed on the database side and it is of two types error based sql injection, union based sql injection. 
+We can see what happening within the database and then we pass on different queries to the database.
+
+2nd type blind sql injection here we don't get to see how our payload is working on the database side actually we need to play with the application behavior
+in this type of sql injection and so we can do using techniques like Boolean based sql injection and time based sql injection
+
+Error-Based	Database error messages reveal information
+Union-Based	Additional data returned in the application's response
+Boolean-Based Blind	Different responses indicate true or false conditions
+Time-Based Blind Information inferred by observing differences in response times.
+Out-of-Band	Database communicates with an external system
+
+Filter Bypass techniques:
+Filters are used to block or sanitize dangerous characters or keywords in sql injection
+
+SeLeCt
+%00SELECT
+SELSELECTECT
+%53%45%4c%45%43%54
+
+
+Second Order Sql injection: It is also known as stored sql injection this is something like stored xss because in this sql injection also when we inject our 
+payload in the http request it won't get executed immediately instead it will be stored in the database server and if we visit to some other web page to fetch the data that has been stored it will be executed at that another web page.
+
+
+Impact of SQL Injection
+
+Read sensitive information.
+Bypass authentication.
+Modify or delete database records.
+Execute administrative database operations (depending on privileges).
+Compromise application integrity.
+
+How to Prevent SQL Injection
+
+*****Stored procedure are used for processes which need execution of multiple sql queries
+
+1. Parameterized Queries (Prepared Statements) 
+
+	A Parameterized Query is a SQL query where user input is never concatenated into the SQL statement. Instead, the query and the input values are sent separately 	to the database. The database treats user input only as data, not as executable SQL.
+
+
+2. Input Validation
+
+	Input validation is a defense-in-depth measure and does not replace parameterized queries.
+
+3. Stored Procedures
+
+	A Stored Procedure is a SQL program stored inside the database. Instead of sending SQL queries from the application, the application simply calls the stored   	procedure.
+
+4. Least Privilege
+
+6. Generic Error Messages
+
+7. Web Application Firewall (WAF)
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+No-sql injection:
+
+No-sql injection database is also known as non-relational database. it will stored in a single key value, document, graph.
+
+
+Input validation should be proper and for that we can use some sanitization libraries like mongo-sanitize or mongoose libraries for mongodb database
+operators map reduce and group these kind of operators should be disabled and they should never be allowed from the user 
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+LDAP injection:
+LDAP- Lightweight Directory Access Protocol which is an application protocol used for accessing and maintaining the data through LDAP.
+Information you need very quickly and you can perform various operations fro example you can add some data to the database delete some data or search for data in database.
+
+using ldap query contains a wildcard and it will retrieve all the name (info).
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
