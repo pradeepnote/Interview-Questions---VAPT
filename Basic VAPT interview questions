@@ -328,7 +328,7 @@ How to Prevent SQL Injection
 
 1. Parameterized Queries (Prepared Statements) 
 
-	A Parameterized Query is a SQL query where user input is never concatenated into the SQL statement. Instead, the query and the input values are sent separately 	to the database. The database treats user input only as data, not as executable SQL.
+	A Parameterized Query is a SQL query where user input is never concatenated into the SQL statement. Instead, the query and the input values are sent separately to the database. The database treats user input only as data, not as executable SQL.
 
 
 2. Input Validation
@@ -345,6 +345,10 @@ How to Prevent SQL Injection
 
 7. Web Application Firewall (WAF)
 
+
+Out-band sql injection:
+the payload which runned or failiured we cant see in the same communication channel , 
+we have to set up one 3rd party server or appliaction to check wethether code executed or hitted succesfully or not
 
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -368,6 +372,182 @@ using ldap query contains a wildcard and it will retrieve all the name (info).
 
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------
+What is OS Command Injection?
+
+OS Command Injection is a vulnerability that occurs when an application passes untrusted user input to an operating system command without proper validation or sanitization.
+An attacker may be able to manipulate the command that the application executes.
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Server-Side Includes (SSI) Injection
+
+Server-Side Includes (SSI) Injection is a vulnerability where user-controlled input is interpreted as SSI directives by the web server. 
+If SSI is enabled and input is not properly validated or encoded, an attacker may be able to read files, access server information, or execute commands depending on the server configuration.
+
+SSI is supported by web servers such as Apache and IIS to dynamically generate web pages.
+
+Common SSI Directives:
+Syntax: <!--#directive parameter=value -->
+
+1)  Include a File
+<!--#include file="header.html" -->
+
+2)  Execute a Program (if enabled)
+<!--#exec cmd="ls-la" -->
+
+By using this payload which contains the ip address and listener port of the attacker machine and attacker starts a listener to get a reverse shell
+
+look for files which end with .stm, .shtm, .shtml
+
+Impact:
+Read sensitive server files.
+View server configuration information.
+Potentially achieve Remote Code Execution
+
+mitigation:
+
+disable SSI where it is not required. 
+If SSI is needed, validate and encode user input, 
+disable dangerous directives such as exec,
+apply the principle of least privilege, 
+restrict file permissions, and keep the web server updated.
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Server-Side Template Injection (SSTI):
+
+Server-Side Template Injection (SSTI) is a vulnerability that occurs when an application embeds untrusted user input into a server-side template, 
+allowing the template engine to interpret that input as template code instead of plain text.
+
+If the application renders user input without proper validation or escaping, an attacker may be able to manipulate the template logic. 
+Depending on the template engine and application configuration, this can result in sensitive data disclosure or even Remote Code Execution (RCE).
+
+Common template engines include:
+
+Language	Template Engine
+Python --> 	Jinja2, Mako
+PHP	--> Twig, Smarty
+Java --> Thymeleaf, FreeMarker
+
+Example:
+
+Template:
+<h1>Welcome {{ username }}</h1>
+If: username = Pradeep
+The server renders:
+<h1>Welcome Pradeep</h1>
+
+Impact
+
+Read sensitive application data.
+Access server configuration information.
+Enumerate application objects.
+Remote Code Execution (RCE).
+
+Prevent SSTI:
+
+1. Never Treat User Input as Template Code
+The best mitigation is to ensure user input is treated as data, not as part of the template.
+2. Use Safe Template Rendering
+Pass user input as template variables rather than dynamically constructing templates from user-controlled input.
+3. Input Validation
+6. Run Applications with Least Privilege
+7. Keep Template Engines Updated
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+File Upload:
+
+A File Upload Vulnerability occurs when an application allows users to upload files without properly validating the file type, content, size, or storage location. 
+This can allow attackers to upload unauthorized or malicious files, potentially leading to data disclosure, denial of service, or even Remote Code Execution depending 
+on the server configuration.
+
+impact:
+
+Unauthorized file upload
+Malicious file storage
+Data disclosure
+File overwrite
+Denial of Service (DoS)
+Potential Remote Code Execution (RCE)
+
+mitigate:
+
+Applications should allow only required file types using allow-list validation, 
+verify the actual file content, 
+validate MIME types on the server, 
+rename uploaded files, 
+store uploads outside the web root, 
+disable execution in upload directories, 
+restrict file size, 
+scan uploaded files for malware, 
+apply least-privilege file permissions,
+and monitor upload activity
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+Directory Listing:
+
+ 
+The primary mitigation is to disable directory listing and restrict access to sensitive directories.
+
+Directory Listing is a vulnerability that occurs when a web server is configured to display the contents of a directory instead of 
+returning a default page (such as index.html or index.php).
+It may expose sensitive files such as backups, configuration files, or documents.
+
+As a result, users can browse files and folders that were not intended to be publicly accessible.
+
+Simple Explanation:
+
+Suppose a website contains the following URL:
+
+/uploads/
+
+Instead of displaying a web page, the server returns:
+
+uploads/
+ ├── invoice.pdf
+ ├── backup.zip
+ ├── config.txt
+ └── image.jpg
+
+The directory contents are visible to anyone.
+
+Directory Listing occurs because:
+
+Directory listing is enabled on the web server.
+No default page (such as index.html) exists.
+Access control is missing.
+
+Impact:
+
+Information disclosure.
+Exposure of backup files.
+Exposure of source code or configuration files.
+Exposure of sensitive documents.
+Increased attack surface.
+
+Mitigation:
+
+1. Disable Directory Listing:
+2. Add Default Pages: Examples: index.html, index.php, default.aspx
+3. Restrict Access: Use proper authentication and authorization.
+4. Remove Sensitive Files: Backup files, Logs, Configuration files, Source code inside publicly accessible directories.
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Path Traversal:
+
+Path Traversal is a vulnerability where an application improperly validates user-controlled file paths, 
+allowing attackers to access files or directories outside the intended location(web root directories). 
+Unauthorized access to sensitive files. 
+
+The primary mitigation is to validate file names, use allow-listed directories, 
+enforce least privilege, and store sensitive files outside the web root.
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
 
 
 
