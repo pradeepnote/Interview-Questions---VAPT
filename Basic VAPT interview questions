@@ -545,7 +545,28 @@ enforce least privilege, and store sensitive files outside the web root.
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 
+Open Redirection:
 
+is a vulnerability where an application redirects users to a destination controlled by user input without proper validation.
+Attackers can exploit this to redirect users from a trusted website to a malicious one, commonly for phishing or credential theft
+
+Impact
+
+Conduct phishing attacks.
+Steal user credentials through fake login pages.
+Redirect users to malware websites.
+Damage the organization's reputation.
+Chain with other vulnerabilities such as OAuth misconfigurations.
+
+Prevent Open Redirection
+1. Use an Allow-List
+2. Avoid User-Controlled URLs
+3. Validate Redirect Destinations
+4. Display a Warning Page
+5. Log Redirect Attempts
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
