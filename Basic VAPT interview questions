@@ -568,9 +568,13 @@ Prevent Open Redirection
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 
+SSRF: It is type of vulnerability in which attacker tricks to server in making internal or external requests and perform unintenteed(read sencitive info, scanning internal service) actions.
+SQL: It is type of vulnerability in which attacker inputs sql querys in different input feilds in order to fetch the user data.
+
+XSS:It is a type of vulnerability in which an application fails to properly validate user input.execute malicious java script which leads to account takeover , deefacement,appliaction structure change
 
 
 
-
+SQL: It is a type of vulnerability in which an application fails to properly validate user input. As a result, an attacker can inject malicious SQL statements, which are concatenated into backend database queries and executed by the database.
 
 
