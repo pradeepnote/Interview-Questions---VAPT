@@ -577,4 +577,18 @@ XSS:It is a type of vulnerability in which an application fails to properly vali
 
 SQL: It is a type of vulnerability in which an application fails to properly validate user input. As a result, an attacker can inject malicious SQL statements, which are concatenated into backend database queries and executed by the database.
 
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+CRLF Injection is a vulnerability where an attacker injects carriage-return and line-feed characters into user-controlled input that is used in HTTP headers.
+This can allow the attacker to break the existing header and inject additional headers, potentially leading to HTTP response splitting, cache poisoning, or other attacks. 
+The primary mitigation is to prevent untrusted input from being directly placed into HTTP headers, validate input, reject CRLF characters where inappropriate, 
+and use secure framework APIs for header handling.
+
+
+**Carriage Return and Line Feed (CRLF) Injection** is a vulnerability that occurs when a server does not properly validate or sanitize user-supplied input, particularly HTTP headers. 
+An attacker can inject `CR` (`\r`) and `LF` (`\n`) characters to manipulate the structure of the HTTP response.
+This can potentially lead to **HTTP response splitting, cookie manipulation, Host Header Injection, header injection, or modification/bypass of security-related headers**,
+which may allow an attacker to bypass certain security restrictions.
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
 
