@@ -1,3 +1,10 @@
+REST API Vs SOAP API
+
+REST APIs are lightweight, resource-based APIs using JSON and HTTP methods, 
+while SOAP APIs are protocol-based, XML-heavy APIs with strict contracts.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 1) What is the use of httponly attribute?
 
 Ans: 
