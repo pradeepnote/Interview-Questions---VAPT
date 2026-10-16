@@ -1,3 +1,11 @@
+Mass Assignment is a vulnerability where an application takes user-supplied input and automatically updates an internal object's
+properties without checking which fields the user is actually allowed to modify 
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Send multiple identical requests at the exact same time (using tools like Burp Turbo Intruder). 
+If two succeed where only one should → race condition exists.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 REST API Vs SOAP API
 
 REST APIs are lightweight, resource-based APIs using JSON and HTTP methods, 
